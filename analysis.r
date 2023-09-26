@@ -2,7 +2,7 @@ library(tibble)
 library(dplyr)
 library(stringr)
 library(ggplot2)
-setwd("C:/Users/Chioroglo/Desktop/CreditScoringStudying")
+setwd("../CreditScoringStudying")
 data <- read.csv("resources/train.csv", sep = ',')
 
 # get names of all columns within a dataset
@@ -82,7 +82,7 @@ age_mean_salary_number_of_clients_data <- data %>%
     Total_Clients = n()
   )
 
-ggplot(age_mean_salary_number_of_clients_data, aes(x = Age, y = Mean_Salary)) +
+mean_salary_and_age_plot <- ggplot(age_mean_salary_number_of_clients_data, aes(x = Age, y = Mean_Salary)) +
 geom_point(shape = 19, size = 3, color = "red", alpha = 0.7) +
 labs(
   title = "Mean Inhand Salary by Age",
@@ -90,6 +90,7 @@ labs(
   y = "Mean Inhand Salary"
 ) +
 theme_minimal()
+ggsave('../creditscoringstudying/media/Mean_Inhand_Salary_By_Age.png',mean_salary_and_age_plot)
 #After plotting this table, I observe three clusters of data
 # 1. [AGE < 20], [SALARY < 3500]
 # 2. [20 <= AGE <= 45], [3750 < SALARY < 4500]
