@@ -1,6 +1,7 @@
 library(tibble)
 library(dplyr)
 library(stringr)
+library(ggplot2)
 setwd("C:/Users/Chioroglo/Desktop/CreditScoringStudying")
 data <- read.csv("resources/train.csv", sep = ',')
 
@@ -10,6 +11,7 @@ names(data)
 # get type of data in certain column
 class(data$Credit_Score)
 
+glimpse(data)
 
 # Because initial data is "character", not "factor", mutate this column to be able to see all categories as FACTOR
 # Here, I transform all categorical data to R-ish fct column type
@@ -47,26 +49,48 @@ result <- data %>%  count(Payment_Behaviour) %>%
 
 # After this mutation, I've noticed, that all ages that are above 56 are presented
 # in less than 3 rows each. For the sake of simplicity, omit these ones, but firstly
-data <- data %>% mutate(Age = as.numeric(str_extract(Age, "\\d+"))) 
+data <- data %>% mutate(Age = as.numeric(str_extract(Age, "\\d+")))
 
 # I want to calculate how much rows would be lost.
-data_with_invalid_age <- filter(data, Age >= 56)
-glimpse(data_with_invalid_age)
-# Amount: 3143. I will replace that values with mean of Age
-
-average_age <- mean(data$Age)
-print(average_age)
+data_with_invalid_age <- data %>% filter(Age > 56)
+glimpse(data_with_invalid_age %>% arrange(Age))
+# Amount: 2781. I want replace that values with mean of Age
+# TODO proof that removal or replac with mean is necessary. proof via plotting and hypothesis
 
 
-data <- filter(data, Age <= 56)
 
-glimpse(data)
+# I've spotted, that ages highet that 56 have only from 1 to 3 occurences
+# so i consider them as outliers and eliminate'em for now
+data <- data %>% filter(Age <= 56)
+
+# Lets show the correlation between salary and age of my dataset
+scatter_plot_income_vs_age <- ggplot(data,aes(x=data$Age,y=data$Monthly_Inhand_Salary)) +
+  geom_point() +  
+  labs(title="Scatter plot of Income vs. Age", x="AGE", y="Salary")
+ggsave(filename="../creditscoringstudying/media/Scatter_Plot_Income_vs_Age.png", scatter_plot_income_vs_age)
+# This information gives me basically nothing, only see, that there is practically
+# no high salary before the age of 20-21, approximately 
 
 
-# result <- data %>%  count(Age) %>%
-#   arrange(desc(Age))
+# I want to see mean salary for each age, presented in the dataset
+# to see whats going on for the mean values
+age_mean_salary_number_of_clients_data <- data %>%
+  filter(!is.na(Monthly_Inhand_Salary)) %>%
+  group_by(Age) %>%
+  summarize(
+    Mean_Salary = mean(Monthly_Inhand_Salary, na.rm = TRUE),
+    Total_Clients = n()
+  )
 
-# print(result)
- 
-
-# glimpse(data)
+ggplot(age_mean_salary_number_of_clients_data, aes(x = Age, y = Mean_Salary)) +
+geom_point(shape = 19, size = 3, color = "red", alpha = 0.7) +
+labs(
+  title = "Mean Inhand Salary by Age",
+  x = "Age",
+  y = "Mean Inhand Salary"
+) +
+theme_minimal()
+#After plotting this table, I observe three clusters of data
+# 1. [AGE < 20], [SALARY < 3500]
+# 2. [20 <= AGE <= 45], [3750 < SALARY < 4500]
+# 3. [AGE >= 45], [4500 <= SALARY <= 5500]
