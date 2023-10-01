@@ -1,3 +1,4 @@
+# link to the dataset: https://www.kaggle.com/datasets/parisrohan/credit-score-classification?resource=download
 library(tibble)
 library(dplyr)
 library(stringr)
@@ -95,3 +96,64 @@ ggsave('../creditscoringstudying/media/Mean_Inhand_Salary_By_Age.png',mean_salar
 # 1. [AGE < 20], [SALARY < 3500]
 # 2. [20 <= AGE <= 45], [3750 < SALARY < 4500]
 # 3. [AGE >= 45], [4500 <= SALARY <= 5500]
+
+
+glimpse(data)
+
+
+# After certain researches, I've decided to do a general analysis of an entire dataset.
+# Generally, each row represents a financial credit condition of a customer
+# in a certain month. We may view it as a credit scoring reports for a customers of a single bank
+# Explanation of columns for this dataset:
+
+# ID - identifier for a record. Ex: 0x1602, 0x1603
+
+# Customer_ID - identifier for a customer. Ex: CUS_0xd40, CUS_0x4157
+
+# Month - month in the year, when the record was made
+
+# Name - name of this customer
+
+# Age - age at the moment of reporting
+
+# SSN - social security number
+
+# Occupation - occupation of customer at the moment of reporting
+
+# Annual_Income
+
+# Monthly_Inhand_Salary
+
+# Num_Bank_Accounts - number of bank accounts
+
+# Num_Credit_Card - number of active credit cards
+
+# Interest_Rate - interest rate in percents, established for this client
+
+# Number of loans - number of active loans at the moment
+
+# Type_Of_Loan - string, that is representing type of each loan, that customer has at the moment
+# Ex. "Auto Loan, Credit-Builder Loan, Personal Loan, and Home Equity Loan", while customer has 4 active loans
+
+# Delay_from_due_date - represents the average number of days delayed from the payment date
+
+# Num_Of_delayed_payment - number of payments that were paid after due date and were penalized
+
+# Num_Of_Credit_Inquiries - amount of times when client has tried to receive his credit score and apply for a credit
+
+# Credit_Mix - category specific for this dataset, indicating if types of credits that customer
+# has is good for the company or bad. Label category
+
+
+# Outstanding_Debt - is amount of debt that customer owes this company at the moment
+
+# Credit Utilization Ratio - coefficient, that is being calculated by formula CUR = (amount_in_hand/credit_limit) * 100
+# this tells us how much money from that credit is being used by the customer
+
+# Total_EMI_per_month - monthly payment, required from the customer to cover his payment for the previous month.
+
+# Payment_Of_Min_Amount - flag, indicating  whether customer has covered his minimal payments for this month
+
+# Payment_Behavior - label, characteristic of a customers payment behaviour, his nominal spending and value payments
+
+# Monthly_balance - total amount of money on the account of this customer.
