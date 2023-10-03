@@ -1,4 +1,4 @@
-dependencies <- c("httpgd", "tibble", "dplyr", "stringr")
+dependencies <- c("httpgd", "tibble", "dplyr", "stringr", "DescTools")
 
 
 for (package in dependencies) {
