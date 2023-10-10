@@ -182,7 +182,7 @@ median_num_of_Credit_inquiries_vs_credit_score <- ggplot(data, aes(x = Credit_Sc
   geom_bar(stat = "summary", fun = "median") +
   labs(x = "Credit Score", y = "Median Number of Credit Inquiries") +
   ggtitle("Bar Plot of Credit Score vs. Median Number of Credit Inquiries") +
-  theme_minimal()
+  theme(panel.background = element_rect(fill= 'white'))
 
 ggsave('../creditscoringstudying/media/BarPlot_Credit_Score_Median_Number_Credit_Inquiries.png',median_num_of_Credit_inquiries_vs_credit_score)
 
