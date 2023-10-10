@@ -3,6 +3,8 @@ library(tibble)
 library(dplyr)
 library(stringr)
 library(ggplot2)
+library(DescTools)
+library(scales)
 setwd("../CreditScoringStudying")
 data <- read.csv("resources/train.csv", sep = ',')
 
@@ -90,7 +92,8 @@ labs(
   x = "Age",
   y = "Mean Inhand Salary"
 ) +
-theme_minimal()
+theme(panel.background = element_rect(fill= 'white'))
+
 ggsave('../creditscoringstudying/media/Mean_Inhand_Salary_By_Age.png',mean_salary_and_age_plot)
 #After plotting this table, I observe three clusters of data
 # 1. [AGE < 20], [SALARY < 3500]
@@ -157,3 +160,68 @@ glimpse(data)
 # Payment_Behavior - label, characteristic of a customers payment behaviour, his nominal spending and value payments
 
 # Monthly_balance - total amount of money on the account of this customer.
+
+
+
+
+# I want to analyze if there is correlation between number of credit inquiries for a client
+# and his credit score. I will group by credit_score and see what's average number and mode of credit inquiries for this label
+
+credit_inquiries_summary <- data %>% filter(!is.na(Num_Credit_Inquiries)) %>% group_by(Credit_Score) %>%
+  summarize(
+    median_num_of_credit_inquiries = median(Num_Credit_Inquiries),
+    mode_num_of_credit_inquiries = Mode(Num_Credit_Inquiries),
+    average_num_of_credit_inquiries = mean(Num_Credit_Inquiries)
+  )
+
+glimpse(credit_inquiries_summary)
+
+
+# i want to do a scatter plot to see whether there is a certain correlation
+median_num_of_Credit_inquiries_vs_credit_score <- ggplot(data, aes(x = Credit_Score, y = Num_Credit_Inquiries)) +
+  geom_bar(stat = "summary", fun = "median") +
+  labs(x = "Credit Score", y = "Median Number of Credit Inquiries") +
+  ggtitle("Bar Plot of Credit Score vs. Median Number of Credit Inquiries") +
+  theme_minimal()
+
+ggsave('../creditscoringstudying/media/BarPlot_Credit_Score_Median_Number_Credit_Inquiries.png',median_num_of_Credit_inquiries_vs_credit_score)
+
+# Number of
+occupations_count <- data %>%
+  distinct(Occupation,Customer_ID) %>%
+  group_by(Occupation) %>%
+  summarise(count = n()) %>%
+  ungroup()
+
+print(occupations_count)
+
+
+salary_occupation_count_of_occupation <- data %>%
+  group_by(Customer_ID) %>%
+  mutate(Monthly_Inhand_Salary_Mean = mean(Monthly_Inhand_Salary, na.rm = TRUE)) %>%
+  ungroup() %>%
+  group_by(Occupation) %>%
+  mutate(Count_of_this_occupation = n()) %>%
+  ungroup() %>%
+  mutate(Occupation = as.factor(Occupation)) %>%
+  select(Customer_ID, Occupation, Monthly_Inhand_Salary_Mean, Count_of_this_occupation) %>%
+  distinct(Customer_ID, .keep_all = TRUE)
+
+print(salary_occupation_count_of_occupation)
+
+
+salary_occupation_preprocessed_for_graph <- salary_occupation_count_of_occupation %>%
+  group_by(Occupation) %>%
+  mutate(Salary_Median_Per_Occupation = median(Monthly_Inhand_Salary_Mean, na.rm = TRUE)) %>%
+  ungroup() %>%
+  select(Occupation, Salary_Median_Per_Occupation, Count_of_this_occupation)
+
+print(salary_occupation_preprocessed_for_graph)
+
+graph_salary_occupation <- ggplot(data = salary_occupation_preprocessed_for_graph, aes(x = Occupation,y = Salary_Median_Per_Occupation)) +
+geom_col(aes(fill = Count_of_this_occupation)) +
+labs(x = "Occupation", y = "Monthly Salary Median Per Occupation") +
+scale_fill_gradient2(low = "red", high = "green", midpoint = median(salary_occupation_preprocessed_for_graph$Count_of_this_occupation)) +
+coord_flip()
+
+ggsave("../creditscoringstudying/media/Bar_Plot_Salary_Median_Per_Occupation.png",graph_salary_occupation)
