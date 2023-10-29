@@ -225,3 +225,19 @@ scale_fill_gradient2(low = "red", high = "green", midpoint = median(salary_occup
 coord_flip()
 
 ggsave("../creditscoringstudying/media/Bar_Plot_Salary_Median_Per_Occupation.png",graph_salary_occupation)
+
+
+# Part 2 of cleansing and arranging the dataset 29.10.2023
+
+# Columns, that hold information about personal data of the lead are:
+# "SSN" - social security number - does not affect credit score - https://en.wikipedia.org/wiki/Social_Security_number
+# "Name" - does not affect credit score, for identification purposes , I use Customer_ID
+# Remove them from the dataset
+
+data <- data %>% select(-SSN, -Name)
+glimpse(data)
+
+
+write.csv(data,
+file = "resources/output_after_preprocessing.csv",
+row.names = FALSE)
