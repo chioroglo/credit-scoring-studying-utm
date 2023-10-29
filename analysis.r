@@ -5,6 +5,7 @@ library(stringr)
 library(ggplot2)
 library(DescTools)
 library(scales)
+source("utils.r")
 setwd("../CreditScoringStudying")
 data <- read.csv("resources/train.csv", sep = ',')
 
@@ -237,6 +238,72 @@ ggsave("../creditscoringstudying/media/Bar_Plot_Salary_Median_Per_Occupation.png
 data <- data %>% select(-SSN, -Name)
 glimpse(data)
 
+# I want to take a look over a data within columns "Monthly_Inhand_Salary" and "Annual Income".
+# According to the information, came from the documentation:
+# Annual_Income - Represents the annual income of the person
+# Monthly_Inhand_Salary - Represents the monthly base salary of a person
+
+
+data$Annual_Income <- sapply(data$Annual_Income, parse_decimal_or_na)
+
+data <- data %>%
+  group_by(Customer_ID) %>%
+  mutate(Monthly_Inhand_Salary = ifelse(Monthly_Inhand_Salary %in% c(NA, "NA"),
+    mean(Monthly_Inhand_Salary, na.rm=TRUE),
+    Monthly_Inhand_Salary)
+  ) %>%
+  ungroup()
+
+# treat the outlines replacing'em with mean over a customer_ID
+# if value is less than 1st quantile and greater than 6th quantile
+
+q1 <- quantile(data$Annual_Income, 0.1, na.rm = TRUE)
+q6 <- quantile(data$Annual_Income, 0.6, na.rm = TRUE)
+
+# [Annual_Income] replace values with mean over a group when income is out of range of
+# Q1 and Q6 quartiles
+data$Annual_Income <- as.numeric(data$Annual_Income)
+
+data <- data %>% group_by(Customer_ID) %>%
+  mutate(Annual_Income = ifelse(Annual_Income <= q1 | Annual_Income >= q6,
+  mean(Annual_Income,na.rm = TRUE),
+  Annual_Income)) %>%
+  ungroup()
+
+# [Num_Bank_Accounts] replace values over q6 with mode over Customer_ID
+q6 <- quantile(data$Num_Bank_Accounts, 0.6, na.rm = TRUE)
+
+data <- data %>%
+group_by(Customer_ID) %>%
+  mutate(Num_Bank_Accounts = ifelse(Num_Bank_Accounts > q6,
+  Mode(data$Num_Bank_Accounts),
+  Num_Bank_Accounts)
+) %>%
+ungroup()
+
+
+# [Num_Credit_Card] replace values over q6 with mode over Customer_ID
+q6 <- quantile(data$Num_Credit_Card, 0.6, na.rm = TRUE)
+
+data <- data %>%
+group_by(Customer_ID) %>%
+  mutate(Num_Credit_Card = ifelse(Num_Credit_Card > q6,
+  Mode(data$Num_Credit_Card),
+  Num_Credit_Card)
+) %>%
+ungroup()
+
+
+filtered_outlines_interest_rate <- data %>% filter(Interest_Rate < 50)
+histogram_interest_rate_frequency <- hist(filtered_outlines_interest_rate$Interest_Rate)
+
+plot(histogram_interest_rate_frequency,main="Interest rate frequency histogram",
+xlab="Interest Rate",
+ylab="Frequency",
+col="lightblue",
+border="black")
+
+ggsave(filename="../creditscoringstudying/media/Interest_Rate_Frequency_Rate.png", histogram_interest_rate_frequency)
 
 write.csv(data,
 file = "resources/output_after_preprocessing.csv",
