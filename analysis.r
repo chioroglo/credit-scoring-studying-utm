@@ -75,7 +75,7 @@ ggsave(filename="../creditscoringstudying/media/Scatter_Plot_Income_vs_Age.png",
 # This information gives me basically nothing, only see, that there is practically
 # no high salary before the age of 20-21, approximately 
 
-
+  
 # I want to see mean salary for each age, presented in the dataset
 # to see whats going on for the mean values
 age_mean_salary_number_of_clients_data <- data %>%
@@ -233,9 +233,15 @@ ggsave("../creditscoringstudying/media/Bar_Plot_Salary_Median_Per_Occupation.png
 # Columns, that hold information about personal data of the lead are:
 # "SSN" - social security number - does not affect credit score - https://en.wikipedia.org/wiki/Social_Security_number
 # "Name" - does not affect credit score, for identification purposes , I use Customer_ID
+
+
+# Type_Of_Loan - indicates stringified version of all types of credit of that lead, but we have a column
+# named "Credit_Mix", which practically gives us only conclusions that
+# could be made from this column without calculations, so I decide to drop it.
+
 # Remove them from the dataset
 
-data <- data %>% select(-SSN, -Name)
+data <- data %>% select(-SSN, -Name, -Type_of_Loan)
 glimpse(data)
 
 # I want to take a look over a data within columns "Monthly_Inhand_Salary" and "Annual Income".
@@ -293,9 +299,13 @@ group_by(Customer_ID) %>%
 ) %>%
 ungroup()
 
-
+# frequency graph over interest rate
 filtered_outlines_interest_rate <- data %>% filter(Interest_Rate < 50)
 histogram_interest_rate_frequency <- hist(filtered_outlines_interest_rate$Interest_Rate)
+
+
+png(filename="../creditscoringstudying/media/Interest_Rate_Frequency_Rate.png")
+###
 
 plot(histogram_interest_rate_frequency,main="Interest rate frequency histogram",
 xlab="Interest Rate",
@@ -303,8 +313,48 @@ ylab="Frequency",
 col="lightblue",
 border="black")
 
-ggsave(filename="../creditscoringstudying/media/Interest_Rate_Frequency_Rate.png", histogram_interest_rate_frequency)
+dev.off()
 
+glimpse(data)
+### I've considered to manually replace outliers within Interest Rate column
+data <- data %>%
+group_by(Customer_ID) %>%
+mutate(Interest_Rate = ifelse(Interest_Rate >= 50, Mode(Interest_Rate),Interest_Rate)
+) %>%
+ungroup()
+
+# [Num_of_Loan] replace values over q6 with mode over Customer_ID
+
+data$Num_of_Loan <- sapply(data$Num_of_Loan, parse_decimal_or_na)
+
+q6 <- quantile(data$Num_of_Loan, 0.6, na.rm = TRUE)
+data <- data %>%
+group_by(Customer_ID) %>%
+  mutate(Num_of_Loan = ifelse(is.na(Num_of_Loan) | Num_of_Loan > q6 | Num_of_Loan < 0,
+  Mode(Num_of_Loan),
+  Num_of_Loan)
+) %>%
+ungroup()
+
+data$Num_of_Delayed_Payment <- sapply(data$Num_of_Delayed_Payment, parse_decimal_or_na)
+q6 <- quantile(data$Num_of_Delayed_Payment, 0.6, na.rm = TRUE)
+
+data <- data %>%
+group_by(Customer_ID) %>%
+  mutate(Num_of_Delayed_Payment = ifelse(is.na(Num_of_Delayed_Payment) | Num_of_Delayed_Payment > q6 | Num_of_Delayed_Payment < 0,
+  ifelse(is.na(Mode(Num_of_Delayed_Payment)),0,Mode(Num_of_Delayed_Payment)),
+  Num_of_Delayed_Payment)
+) %>%
+ungroup()
+
+data$Changed_Credit_Limit <- sapply(data$Changed_Credit_Limit, parse_decimal_or_na())
+data <- data %>%
+ mutate(Changed_Credit_Limit = as.numeric(Changed_Credit_Limit)) %>%
+ mutate(Changed_Credit_Limit = ifelse(is.na(Changed_Credit_Limit),0,Changed_Credit_Limit))
+
+print(data %>% select(Changed_Credit_Limit) %>% distinct() %>% arrange(Changed_Credit_Limit),n=4375)
+
+# below should always be at the end
 write.csv(data,
 file = "resources/output_after_preprocessing.csv",
 row.names = FALSE)
