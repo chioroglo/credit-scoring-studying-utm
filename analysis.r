@@ -336,6 +336,7 @@ group_by(Customer_ID) %>%
 ) %>%
 ungroup()
 
+# [Num_of_Delayed_Payment] replace values over q6 with mode over Customer_ID and if no mode can be calculated, then just pust 0
 data$Num_of_Delayed_Payment <- sapply(data$Num_of_Delayed_Payment, parse_decimal_or_na)
 q6 <- quantile(data$Num_of_Delayed_Payment, 0.6, na.rm = TRUE)
 
@@ -347,12 +348,61 @@ group_by(Customer_ID) %>%
 ) %>%
 ungroup()
 
+# [Changed_Credit_Limit] replace values with 0 if it isn't parsable decimal number, because 0 won't affect result at all.
 data$Changed_Credit_Limit <- sapply(data$Changed_Credit_Limit, parse_decimal_or_na())
 data <- data %>%
  mutate(Changed_Credit_Limit = as.numeric(Changed_Credit_Limit)) %>%
  mutate(Changed_Credit_Limit = ifelse(is.na(Changed_Credit_Limit),0,Changed_Credit_Limit))
 
-print(data %>% select(Changed_Credit_Limit) %>% distinct() %>% arrange(Changed_Credit_Limit),n=4375)
+# print(data %>% select(Changed_Credit_Limit) %>% distinct() %>% arrange(Changed_Credit_Limit),n=4375)
+
+
+# [Num_Credit_Inquiries] replace values over q6 with mode over customer_ID
+
+data$Num_Credit_Inquiries <- sapply(data$Num_Credit_Inquiries, parse_decimal_or_na)
+
+q6 <- quantile(data$Num_Credit_Inquiries, 0.6, na.rm = TRUE)
+
+data <- data %>%
+group_by(Customer_ID) %>%
+  mutate(Num_Credit_Inquiries = ifelse(is.na(Num_Credit_Inquiries) | Num_Credit_Inquiries > q6 | Num_Credit_Inquiries < 0,
+  Mode(Num_Credit_Inquiries),
+  Num_Credit_Inquiries))  %>%
+  mutate(Num_Credit_Inquiries = ifelse(is.na(Num_Credit_Inquiries),0,Num_Credit_Inquiries)) %>%
+ungroup()
+
+
+# [Credit_Mix]
+print(data %>% select(Credit_Mix) %>% distinct())
+# available values:
+#  Credit_Mix
+#  <chr>
+#1 _
+#2 Good
+#3 Standard
+#4 Bad
+# try to eliminate missing values with Mode over a Customer_ID group, if they still remain -> "Bad" would serve as a fallback value
+
+available_labels_credit_mix = c("Good", "Standard", "Bad")
+
+data <- data %>%
+  group_by(Customer_ID) %>%
+  mutate(Credit_Mix = ifelse(Credit_Mix %in% available_labels_credit_mix, Credit_Mix, Mode(Credit_Mix))) %>%
+  mutate(Credit_Mix = ifelse(Credit_Mix %in% available_labels_credit_mix, Credit_Mix, "Bad"))
+
+
+# [Outstanding_Debt] there is no obvious outliers, so just parse it as decimal
+data$Outstanding_Debt <- sapply(data$Outstanding_Debt, parse_decimal_or_na)
+
+
+# Occupation
+data <- data %>%
+group_by(Customer_ID) %>%
+  mutate(Occupation = ifelse(is.na(Occupation) | Occupation == "_______",
+  Mode(Occupation),
+  Occupation))  %>%
+ungroup()
+
 
 # below should always be at the end
 write.csv(data,
