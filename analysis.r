@@ -239,9 +239,14 @@ ggsave("../creditscoringstudying/media/Bar_Plot_Salary_Median_Per_Occupation.png
 # named "Credit_Mix", which practically gives us only conclusions that
 # could be made from this column without calculations, so I decide to drop it.
 
+
+# Month - as we are looking for more summarized data, recognise
+# each record regardless of order of month, so I may drop it as
+# irrelevant.
+
 # Remove them from the dataset
 
-data <- data %>% select(-SSN, -Name, -Type_of_Loan)
+data <- data %>% select(-SSN, -Name, -Type_of_Loan, -Month)
 glimpse(data)
 
 # I want to take a look over a data within columns "Monthly_Inhand_Salary" and "Annual Income".
@@ -403,6 +408,11 @@ group_by(Customer_ID) %>%
   Occupation))  %>%
 ungroup()
 
+
+
+data <- data %>%
+mutate(Credit_History_Age = tolower(Credit_History_Age)) %>%
+mutate(Credit_History_Age = parse_credit_history_age_column_to_amounth_of_months(Credit_History_Age))
 
 # below should always be at the end
 write.csv(data,
