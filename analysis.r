@@ -438,7 +438,28 @@ data <- data %>% mutate(Monthly_Balance = ifelse(Monthly_Balance == "",0,Monthly
   mutate(Monthly_Balance = ifelse(Monthly_Balance == 0,mean(Monthly_Balance),Monthly_Balance)) %>%
   ungroup()
 
-  
+# max
+max(data$Monthly_Balance)
+# Now, to remove outliers in more general way, I want to execute a function that would
+data$Monthly_Balance <- replace_outliers_with_mean_numeric(data$Monthly_Balance)
+data$Annual_Income <- replace_outliers_with_mean_numeric(data$Annual_Income)
+data$Monthly_Inhand_Salary <- replace_outliers_with_mean_numeric(data$Monthly_Inhand_Salary)
+data$Outstanding_Debt <- replace_outliers_with_mean_numeric(data$Outstanding_Debt)
+
+ggplot(data, aes(x = data$Monthly_Balance)) +
+geom_boxplot(fill = "lightblue", color = "black") +
+labs(title="Boxplot", y = "Values")
+
+
+
+# I want to compare credit score label and salary, portray as boxplots
+credit_score_salary_graph <- ggplot(data, aes(x = Credit_Score, y = Monthly_Inhand_Salary, fill = Credit_Score)) +
+geom_boxplot() +
+labs(title = "Boxplot") +
+scale_fill_manual(values = c("red","blue","green"))
+
+ggsave(filename="../creditscoringstudying/media/Boxplot_Score_And_Monthly_salary.png", credit_score_salary_graph)
+
 # below should always be at the end
 write.csv(data,
 file = "resources/output_after_preprocessing.csv",

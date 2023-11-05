@@ -22,7 +22,9 @@ is_convertible_to_numeric = function(string) {
 }
 
 replace_outliers_with_mean_numeric = function(numeric_array) {
+  
   numeric_array[is.na(numeric_array)] <- 0
+  numeric_array <- sapply(numeric_array,as.numeric)
 
   summary <- summary(numeric_array)
   q1 <- summary[2]
@@ -30,8 +32,10 @@ replace_outliers_with_mean_numeric = function(numeric_array) {
   interquartile_range <- abs(q1 - q3)
   median_numeric_array <- median(numeric_array)
   print(interquartile_range)
+  print(summary(numeric_array))
 
   numeric_array[numeric_array < (q1 - 1.5 * interquartile_range)] <- median_numeric_array
   numeric_array[numeric_array > (q3 + 1.5 * interquartile_range)] <- median_numeric_array
+  
   return(numeric_array)
 }
