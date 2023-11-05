@@ -20,3 +20,18 @@ parse_credit_history_age_column_to_amounth_of_months <- function(string) {
 is_convertible_to_numeric = function(string) {
   return (!is.na(as.numeric(string)))
 }
+
+replace_outliers_with_mean_numeric = function(numeric_array) {
+  numeric_array[is.na(numeric_array)] <- 0
+
+  summary <- summary(numeric_array)
+  q1 <- summary[2]
+  q3 <- summary[5]
+  interquartile_range <- abs(q1 - q3)
+  median_numeric_array <- median(numeric_array)
+  print(interquartile_range)
+
+  numeric_array[numeric_array < (q1 - 1.5 * interquartile_range)] <- median_numeric_array
+  numeric_array[numeric_array > (q3 + 1.5 * interquartile_range)] <- median_numeric_array
+  return(numeric_array)
+}
