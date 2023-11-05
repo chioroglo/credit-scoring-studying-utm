@@ -39,3 +39,13 @@ replace_outliers_with_mean_numeric = function(numeric_array) {
   
   return(numeric_array)
 }
+
+initialize_environment = function() {
+  library(tibble)
+  library(dplyr)
+  library(stringr)
+  library(ggplot2)
+  library(DescTools)
+  library(scales)
+  setwd("../CreditScoringStudying")
+}

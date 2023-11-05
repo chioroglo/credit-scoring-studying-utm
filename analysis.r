@@ -1,12 +1,7 @@
 # link to the dataset: https://www.kaggle.com/datasets/parisrohan/credit-score-classification?resource=download
-library(tibble)
-library(dplyr)
-library(stringr)
-library(ggplot2)
-library(DescTools)
-library(scales)
+
 source("utils.r")
-setwd("../CreditScoringStudying")
+initialize_environment()
 data <- read.csv("resources/train.csv", sep = ',')
 # get names of all columns within a dataset
 names(data)
@@ -450,7 +445,16 @@ ggplot(data, aes(x = data$Monthly_Balance)) +
 geom_boxplot(fill = "lightblue", color = "black") +
 labs(title="Boxplot", y = "Values")
 
+write.csv(data,
+file = "resources/output_after_preprocessing.csv",
+row.names = FALSE)
 
+# cleaning finished, start complex analysis
+
+source("utils.r")
+initialize_environment()
+data <- read.csv("resources/output_after_preprocessing.csv", sep = ',')
+glimpse(data)
 
 # I want to compare credit score label and salary, portray as boxplots
 credit_score_salary_graph <- ggplot(data, aes(x = Credit_Score, y = Monthly_Inhand_Salary, fill = Credit_Score)) +
@@ -460,7 +464,106 @@ scale_fill_manual(values = c("red","blue","green"))
 
 ggsave(filename="../creditscoringstudying/media/Boxplot_Score_And_Monthly_salary.png", credit_score_salary_graph)
 
-# below should always be at the end
-write.csv(data,
-file = "resources/output_after_preprocessing.csv",
-row.names = FALSE)
+# I want to compare credit score label and salary, portray as boxplots
+credit_score_monthly_balance_graph <- ggplot(data, aes(x = Credit_Score, y = Monthly_Balance, fill = Credit_Score)) +
+geom_boxplot() +
+labs(title = "Boxplot") +
+scale_fill_manual(values = c("red", "blue", "green"))
+
+ggsave(filename="../creditscoringstudying/media/Boxplot_Score_And_Monthly_Balance.png", credit_score_monthly_balance_graph)
+
+score_num_bank_accounts <- ggplot(data, aes(x = Credit_Score, y = Num_Bank_Accounts, fill = Credit_Score)) +
+geom_boxplot() +
+labs("Boxplot") +
+scale_fill_manual(values = c("green","maroon","gold"))
+
+ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Num_Bank_Accounts.png", score_num_bank_accounts)
+
+
+score_num_credit_cards <- ggplot(data, aes(x = Credit_Score, y = Num_Credit_Card, fill = Credit_Score)) +
+geom_boxplot() +
+labs("Boxplot") +
+scale_fill_manual(values = c("green","maroon","gold"))
+
+ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Num_Credit_Cards.png", score_num_credit_cards)
+
+score_interest_rate <- ggplot(data, aes(x = Credit_Score, y = Interest_Rate, fill = Credit_Score)) +
+geom_boxplot() +
+labs("Boxplot") +
+scale_fill_manual(values = c("green","maroon","gold"))
+
+ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Interest_Rate.png", score_interest_rate)
+
+
+score_num_of_loans <- ggplot(data, aes(x = Credit_Score, y = Num_of_Loan, fill = Credit_Score)) +
+geom_boxplot() +
+labs("Boxplot") +
+scale_fill_manual(values = c("green","maroon","gold"))
+
+ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Num_Loans.png", score_num_of_loans)
+
+score_due_date <- ggplot(data, aes(x = Credit_Score, y = Delay_from_due_date, fill = Credit_Score)) +
+geom_boxplot() +
+labs("Boxplot") +
+scale_fill_manual(values = c("green","maroon","gold"))
+
+ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Max_DPD.png", score_due_date)
+
+
+score_annual_income <- ggplot(data, aes(x = Credit_Score, y = Annual_Income, fill = Credit_Score)) +
+geom_boxplot() +
+labs("Boxplot") +
+scale_fill_manual(values = c("green","maroon","gold"))
+
+ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Annual_Income.png",score_annual_income)
+
+
+score_number_of_delayed_payments <- ggplot(data, aes(x = Credit_Score, y = Num_of_Delayed_Payment, fill = Credit_Score)) +
+geom_boxplot() +
+labs("Boxplot") +
+scale_fill_manual(values = c("green","maroon","gold"))
+
+ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Number_Of_delayed_payments.png",score_number_of_delayed_payments)
+
+score_number_outstanding_debt <- ggplot(data, aes(x = Credit_Score, y = Outstanding_Debt, fill = Credit_Score)) +
+geom_boxplot() +
+labs("Boxplot") +
+scale_fill_manual(values = c("green","maroon","gold"))
+
+ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Number_Outstanding_Debt.png",score_number_outstanding_debt)
+
+
+score_number_credit_utilization_ratio <- ggplot(data, aes(x = Credit_Score, y = Credit_Utilization_Ratio, fill = Credit_Score)) +
+geom_boxplot() +
+labs("Boxplot") +
+scale_fill_manual(values = c("green","maroon","gold"))
+
+ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Credit_Utilization_Ratio.png",score_number_credit_utilization_ratio)
+
+score_credit_history_age_months <- ggplot(data, aes(x = Credit_Score, y = Credit_History_Age, fill = Credit_Score)) +
+geom_boxplot() +
+labs("Boxplot") +
+scale_fill_manual(values = c("green","maroon","gold"))
+
+ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Credit_History_Age.png",score_credit_history_age_months)
+
+score_credit_emi_payment_load <- ggplot(data, aes(x = Credit_Score, y = Total_EMI_per_month, fill = Credit_Score)) +
+geom_boxplot() +
+labs("Boxplot") +
+scale_fill_manual(values = c("green","maroon","gold"))
+
+ggsave(filename="../creditscoringstudying/media/Boxplot_Score_EMI_payment_load.png",score_credit_emi_payment_load)
+
+score_credit_amount_invested_monthly <- ggplot(data, aes(x = Credit_Score, y = Amount_invested_monthly, fill = Credit_Score)) +
+geom_boxplot() +
+labs("Boxplot") +
+scale_fill_manual(values = c("green","maroon","gold"))
+
+ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Monthly_Investitions.png",score_credit_amount_invested_monthly)
+
+
+payment_of_min_amount_graph <- ggplot(data, aes(x = Payment_of_Min_Amount)) +
+geom_bar() +
+labs(title = "Count plot by payment of min amount", x = "Payment Of Min Amount", y = "Count")
+
+ggsave("../creditscoringstudying/media/BarPlot_Payment_of_min_amount.png",payment_of_min_amount_graph)
