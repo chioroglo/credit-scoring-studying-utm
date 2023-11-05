@@ -8,7 +8,6 @@ library(scales)
 source("utils.r")
 setwd("../CreditScoringStudying")
 data <- read.csv("resources/train.csv", sep = ',')
-
 # get names of all columns within a dataset
 names(data)
 
@@ -414,6 +413,32 @@ data <- data %>%
 mutate(Credit_History_Age = tolower(Credit_History_Age)) %>%
 mutate(Credit_History_Age = parse_credit_history_age_column_to_amounth_of_months(Credit_History_Age))
 
+
+# TODO remove before committing
+#data <- read.csv("resources/output_after_preprocessing.csv", sep = ',')
+
+# Filter out NA credit history age.
+data <- filter(data,!is.na(data$Credit_History_Age))
+
+
+# amount invested monthly
+
+data <- data %>% mutate(Amount_invested_monthly = ifelse(Amount_invested_monthly == "","__10000__",Amount_invested_monthly))
+
+data <- data %>%
+  mutate(Amount_invested_monthly = ifelse(is_convertible_to_numeric(Amount_invested_monthly),Amount_invested_monthly,0)) %>%
+  mutate(Amount_invested_monthly = as.numeric(Amount_invested_monthly)) %>%
+  group_by(Customer_ID) %>%
+  mutate(Amount_invested_monthly = ifelse(Amount_invested_monthly == 0,mean(Amount_invested_monthly),Amount_invested_monthly)) %>%
+  ungroup()
+
+data <- data %>% mutate(Monthly_Balance = ifelse(Monthly_Balance == "",0,Monthly_Balance)) %>%
+  mutate(Monthly_Balance = as.numeric(Monthly_Balance)) %>%
+  group_by(Customer_ID) %>%
+  mutate(Monthly_Balance = ifelse(Monthly_Balance == 0,mean(Monthly_Balance),Monthly_Balance)) %>%
+  ungroup()
+
+  
 # below should always be at the end
 write.csv(data,
 file = "resources/output_after_preprocessing.csv",

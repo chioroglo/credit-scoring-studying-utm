@@ -4,8 +4,7 @@ dependencies <- c(
     "dplyr",
     "stringr",
     "DescTools",
-    "scales"
-    )
+    "scales")
 
 
 for (package in dependencies) {

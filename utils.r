@@ -16,3 +16,7 @@ parse_credit_history_age_column_to_amounth_of_months <- function(string) {
     str_replace(pattern_years_months,"\\2")
   return(as.numeric(years) * 12 + as.numeric(months))
 }
+
+is_convertible_to_numeric = function(string) {
+  return (!is.na(as.numeric(string)))
+}
