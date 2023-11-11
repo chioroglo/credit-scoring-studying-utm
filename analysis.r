@@ -583,9 +583,12 @@ print(
 contigency_table_payment_behavior_credit_score <- table(data$Credit_Score, data$Payment_Behaviour)
 print(contigency_table_payment_behavior_credit_score)
 
-ggplot(data, aes(x = Payment_Behaviour, fill = Credit_Score)) +
+credit_score_distribution_payment_behaviour_graph <- ggplot(data, aes(x = Payment_Behaviour, fill = Credit_Score)) +
   geom_bar(position = "stack") +
   labs(title = "Credit Score Distribution by Payment Behaviour", fill = "Credit Score")
+
+ggsave("../creditscoringstudying/media/MosaicPlot_Payment_Behaviour_Credit_Score.png",credit_score_distribution_payment_behaviour_graph)
+
 
 # I want to analyse the correlation between this categorical column and final result
 # I want to perform a Chi Square testing
@@ -613,3 +616,6 @@ print(chi_square_result_pb_cs)
 # two categorical variables (in this case, "Credit_Score" and "Payment_Behaviour")
 # are independent. The small p-value suggests that there is a significant association
 # between these two variables.
+
+conditional_probability_pb_cs <- prop.table(contigency_table_payment_behavior_credit_score, margin = 2)
+print(conditional_probability_pb_cs)
