@@ -567,3 +567,49 @@ geom_bar() +
 labs(title = "Count plot by payment of min amount", x = "Payment Of Min Amount", y = "Count")
 
 ggsave("../creditscoringstudying/media/BarPlot_Payment_of_min_amount.png",payment_of_min_amount_graph)
+
+
+source("utils.r")
+initialize_environment()
+data <- read.csv("resources/output_after_preprocessing.csv", sep = ',')
+glimpse(data)
+
+print(
+  unique(data %>% group_by(Payment_Behaviour) %>% summarise(count_of_label = n()))
+  )
+
+# begin EDA over this variable
+
+contigency_table_payment_behavior_credit_score <- table(data$Credit_Score, data$Payment_Behaviour)
+print(contigency_table_payment_behavior_credit_score)
+
+ggplot(data, aes(x = Payment_Behaviour, fill = Credit_Score)) +
+  geom_bar(position = "stack") +
+  labs(title = "Credit Score Distribution by Payment Behaviour", fill = "Credit Score")
+
+# I want to analyse the correlation between this categorical column and final result
+# I want to perform a Chi Square testing
+
+chi_square_result_pb_cs <- chisq.test(contigency_table_payment_behavior_credit_score)
+print(chi_square_result_pb_cs)
+
+# The chi-squared statistic (1238.1 in this case) measures the extent
+# of the difference between the observed and expected frequencies
+# in the contingency table. A larger chi-squared value suggests
+# a greater difference.
+
+
+# Degrees of Freedom (df):
+# The degrees of freedom (12 in this case) depend on the number
+# of categories in both variables. For a contingency table,
+# df = (number of rows - 1) * (number of columns - 1).
+# In this case, if we have three levels for "Credit_Score"
+# and seven levels for "Payment_Behaviour," we would have
+# (3 - 1) * (7 - 1) = 12 degrees of freedom.
+
+# The p-value is extremely small (< 2.2e-16), indicating strong
+# evidence against the null hypothesis. In the context of the chi
+# squared test for independence, the null hypothesis is that the
+# two categorical variables (in this case, "Credit_Score" and "Payment_Behaviour")
+# are independent. The small p-value suggests that there is a significant association
+# between these two variables.
