@@ -619,3 +619,72 @@ print(chi_square_result_pb_cs)
 
 conditional_probability_pb_cs <- prop.table(contigency_table_payment_behavior_credit_score, margin = 2)
 print(conditional_probability_pb_cs)
+
+# I decide to split this categorical value to two ordinal encoded columns
+# to Payment_Behaviour_Amount_Spent and Payment_Behaviour_Value_Payments
+# and an Payment_Behaviour_Is_Unknown with special value -1 for other ones
+
+data <- data %>%
+  mutate(
+    Payment_Behaviour_Is_Unknown = ifelse(grepl("Unknown",Payment_Behaviour), 1 , 0),
+    Payment_Behaviour_Amount_Spent = case_when(
+      grepl("Low_spent",Payment_Behaviour) ~ 0,
+      grepl("High_spent",Payment_Behaviour) ~ 1,
+      TRUE ~ -1
+    ),
+    Payment_Behaviour_Value_Payments = case_when(
+      grepl("Small_value_payments",Payment_Behaviour) ~ 0,
+      grepl("Medium_value_payments",Payment_Behaviour) ~ 1,
+      grepl("Large_value_payments",Payment_Behaviour) ~ 2,
+      TRUE ~ -1
+    )
+  )
+
+data <- data %>% select(-Payment_Behaviour)
+
+data <- data %>%
+  mutate(
+    Credit_Mix = case_when(
+      grepl("Bad",Credit_Mix) ~ 0,
+      grepl("Standard",Credit_Mix) ~ 1,
+      grepl("Good",Credit_Mix) ~ 2
+    )
+  )
+
+# Occupation
+print(
+  unique(data %>% group_by(Occupation) %>% summarise(count_of_label = n()))
+)
+# We have 46 records with missing Occupation field, so drop them
+
+data <- filter(data, Occupation != "_______")
+
+
+chi_square_result_o_cs <- chisq.test(data$Occupation,data$Credit_Score)
+print(chi_square_result_o_cs)
+
+print(chi_square_result_o_cs$residuals)
+
+credit_score_distribution_occupation_graph <- ggplot(data, aes(x = Occupation, fill = Credit_Score)) +
+  geom_bar(position = "stack") +
+  labs(title = "Credit Score Distribution by Occupation", fill = "Credit Score")
+
+ggsave("../creditscoringstudying/media/MosaicPlot_Occupation_Credit_Score.png",credit_score_distribution_occupation_graph)
+
+# I decide to drop occupation column as insignificant
+
+data <- data %>% select(-Occupation)
+
+# Payment_Of_Min_Amount
+print(
+  unique(data %>% group_by(Payment_of_Min_Amount) %>% summarise(count_of_label = n()))
+)
+
+# Payment_Of_Min_Amount contains very significant amount of unknown label "NM", so I decide
+# to not take in consideration as very shady column as filtering out "NM" would cause
+# loss of about 10k of data rows
+
+data <- data %>% select(-Payment_of_Min_Amount)
+write.csv(data,
+file = "resources/output_after_preprocessing.csv",
+row.names = FALSE)
