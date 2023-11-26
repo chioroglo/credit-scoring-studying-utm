@@ -668,7 +668,8 @@ print(chi_square_result_o_cs$residuals)
 
 credit_score_distribution_occupation_graph <- ggplot(data, aes(x = Occupation, fill = Credit_Score)) +
   geom_bar(position = "stack") +
-  labs(title = "Credit Score Distribution by Occupation", fill = "Credit Score")
+  labs(title = "Credit Score Distribution by Occupation", fill = "Credit Score") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ggsave("../creditscoringstudying/media/MosaicPlot_Occupation_Credit_Score.png",credit_score_distribution_occupation_graph)
 
@@ -694,7 +695,7 @@ row.names = FALSE)
 #####
 source("utils.r")
 initialize_environment()
-data <- read.csv("resources/output_after_preprocessing.csv", sep = ',')
+data <- read.csv("resources/train.csv", sep = ',')
 
 # Assuming your data frame is named 'data'
 # Create a 3D scatter plot
@@ -727,11 +728,24 @@ IQR_value <- Q3 - Q1
 threshold <- 1.5
 
 
+cross_table <- table(data$Occupation, data$Credit_Score)
+
+# Perform chi-squared test
+result_chi_square <- chisq.test(cross_table)
+
+# Display the chi-square test results
+print(result_chi_square)
 
 data$Income_Category <- cut(data$Annual_Income, breaks = c(-Inf, Q1, Q3, Inf), labels = c("Low Income", "Medium Income", "High Income"))
+
+tibble(data$Annual_Income)
+tibble(data$Income_Category)
+
+# Assuming your data frame is named 'data'
+summary_stats <- tapply(data$Credit_Score, data$Occupation, summary)
+print(summary_stats)
+
 
 annual_income_credit_score <- data_to_hierarchical(data, c(Credit_Score,Income_Category), Annual_Income)
 chart_sunburst <- hchart(annual_income_credit_score,type='sunburst')
 chart_sunburst
-
-glimpse(data)
