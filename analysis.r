@@ -585,7 +585,8 @@ print(contigency_table_payment_behavior_credit_score)
 
 credit_score_distribution_payment_behaviour_graph <- ggplot(data, aes(x = Payment_Behaviour, fill = Credit_Score)) +
   geom_bar(position = "stack") +
-  labs(title = "Credit Score Distribution by Payment Behaviour", fill = "Credit Score")
+  labs(title = "Credit Score Distribution  by Payment Behaviour", fill = "Credit Score") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ggsave("../creditscoringstudying/media/MosaicPlot_Payment_Behaviour_Credit_Score.png",credit_score_distribution_payment_behaviour_graph)
 

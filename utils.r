@@ -41,6 +41,7 @@ replace_outliers_with_mean_numeric = function(numeric_array) {
 }
 
 initialize_environment = function() {
+  library(nnet)
   library(tibble)
   library(dplyr)
   library(stringr)
