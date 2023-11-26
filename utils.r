@@ -48,5 +48,8 @@ initialize_environment = function() {
   library(ggplot2)
   library(DescTools)
   library(scales)
+  library(plotly)
+  library(networkD3)
+  library(highcharter)
   setwd("../CreditScoringStudying")
 }

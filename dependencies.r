@@ -4,7 +4,9 @@ dependencies <- c(
     "dplyr",
     "stringr",
     "DescTools",
-    "scales")
+    "scales",
+    "plotly",
+    "highcharter")
 
 
 for (package in dependencies) {
