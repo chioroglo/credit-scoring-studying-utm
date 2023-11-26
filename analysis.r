@@ -689,3 +689,49 @@ data <- data %>% select(-Payment_of_Min_Amount)
 write.csv(data,
 file = "resources/output_after_preprocessing.csv",
 row.names = FALSE)
+
+
+#####
+source("utils.r")
+initialize_environment()
+data <- read.csv("resources/output_after_preprocessing.csv", sep = ',')
+
+# Assuming your data frame is named 'data'
+# Create a 3D scatter plot
+fig <- plot_ly(
+  data,
+  x = ~Monthly_Inhand_Salary,
+  y = ~Annual_Income,
+  z = ~Monthly_Balance,
+  type = "scatter3d",
+  mode = "markers",
+  marker = list(size = 5)
+)
+
+# Customize the layout
+layout <- list(scene = list(aspectmode = "cube"))
+
+# Combine the plot and layout
+fig <- fig %>% layout(layout)
+
+# Display the 3D scatter plot
+fig
+
+
+# Assuming your data frame is named 'data'
+# Discretize Annual Income into categories
+
+Q1 <- quantile(data$Annual_Income, 0.25)
+Q3 <- quantile(data$Annual_Income, 0.75)
+IQR_value <- Q3 - Q1
+threshold <- 1.5
+
+
+
+data$Income_Category <- cut(data$Annual_Income, breaks = c(-Inf, Q1, Q3, Inf), labels = c("Low Income", "Medium Income", "High Income"))
+
+annual_income_credit_score <- data_to_hierarchical(data, c(Credit_Score,Income_Category), Annual_Income)
+chart_sunburst <- hchart(annual_income_credit_score,type='sunburst')
+chart_sunburst
+
+glimpse(data)
