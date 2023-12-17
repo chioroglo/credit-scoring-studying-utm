@@ -61,7 +61,7 @@ def logistic_regression() -> None:
     plt.xticks(rotation=45)
     
     plt.show()
-    plt.savefig('media/Boxplot_Valuable_Variables_Model.png')
+    plt.savefig('plots/Boxplot_Valuable_Variables_Model.png')
     
 
 def neural_network() -> None:

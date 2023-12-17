@@ -65,7 +65,7 @@ data <- data %>% filter(Age <= 56)
 scatter_plot_income_vs_age <- ggplot(data,aes(x=data$Age,y=data$Monthly_Inhand_Salary)) +
   geom_point() +  
   labs(title="Scatter plot of Income vs. Age", x="AGE", y="Salary")
-ggsave(filename="../creditscoringstudying/media/Scatter_Plot_Income_vs_Age.png", scatter_plot_income_vs_age)
+ggsave(filename="../creditscoringstudying/plots/Scatter_Plot_Income_vs_Age.png", scatter_plot_income_vs_age)
 # This information gives me basically nothing, only see, that there is practically
 # no high salary before the age of 20-21, approximately 
 
@@ -89,7 +89,7 @@ labs(
 ) +
 theme(panel.background = element_rect(fill= 'white'))
 
-ggsave('../creditscoringstudying/media/Mean_Inhand_Salary_By_Age.png',mean_salary_and_age_plot)
+ggsave('../creditscoringstudying/plots/Mean_Inhand_Salary_By_Age.png',mean_salary_and_age_plot)
 #After plotting this table, I observe three clusters of data
 # 1. [AGE < 20], [SALARY < 3500]
 # 2. [20 <= AGE <= 45], [3750 < SALARY < 4500]
@@ -179,7 +179,7 @@ median_num_of_Credit_inquiries_vs_credit_score <- ggplot(data, aes(x = Credit_Sc
   ggtitle("Bar Plot of Credit Score vs. Median Number of Credit Inquiries") +
   theme(panel.background = element_rect(fill= 'white'))
 
-ggsave('../creditscoringstudying/media/BarPlot_Credit_Score_Median_Number_Credit_Inquiries.png',median_num_of_Credit_inquiries_vs_credit_score)
+ggsave('../creditscoringstudying/plots/BarPlot_Credit_Score_Median_Number_Credit_Inquiries.png',median_num_of_Credit_inquiries_vs_credit_score)
 
 # Number of
 occupations_count <- data %>%
@@ -219,7 +219,7 @@ labs(x = "Occupation", y = "Monthly Salary Median Per Occupation") +
 scale_fill_gradient2(low = "red", high = "green", midpoint = median(salary_occupation_preprocessed_for_graph$Count_of_this_occupation)) +
 coord_flip()
 
-ggsave("../creditscoringstudying/media/Bar_Plot_Salary_Median_Per_Occupation.png",graph_salary_occupation)
+ggsave("../creditscoringstudying/plots/Bar_Plot_Salary_Median_Per_Occupation.png",graph_salary_occupation)
 
 
 # Part 2 of cleansing and arranging the dataset 29.10.2023
@@ -303,7 +303,7 @@ filtered_outlines_interest_rate <- data %>% filter(Interest_Rate < 50)
 histogram_interest_rate_frequency <- hist(filtered_outlines_interest_rate$Interest_Rate)
 
 
-png(filename="../creditscoringstudying/media/Interest_Rate_Frequency_Rate.png")
+png(filename="../creditscoringstudying/plots/Interest_Rate_Frequency_Rate.png")
 ###
 
 plot(histogram_interest_rate_frequency,main="Interest rate frequency histogram",
@@ -462,7 +462,7 @@ geom_boxplot() +
 labs(title = "Boxplot") +
 scale_fill_manual(values = c("red","blue","green"))
 
-ggsave(filename="../creditscoringstudying/media/Boxplot_Score_And_Monthly_salary.png", credit_score_salary_graph)
+ggsave(filename="../creditscoringstudying/plots/Boxplot_Score_And_Monthly_salary.png", credit_score_salary_graph)
 
 # I want to compare credit score label and salary, portray as boxplots
 credit_score_monthly_balance_graph <- ggplot(data, aes(x = Credit_Score, y = Monthly_Balance, fill = Credit_Score)) +
@@ -470,14 +470,14 @@ geom_boxplot() +
 labs(title = "Boxplot") +
 scale_fill_manual(values = c("red", "blue", "green"))
 
-ggsave(filename="../creditscoringstudying/media/Boxplot_Score_And_Monthly_Balance.png", credit_score_monthly_balance_graph)
+ggsave(filename="../creditscoringstudying/plots/Boxplot_Score_And_Monthly_Balance.png", credit_score_monthly_balance_graph)
 
 score_num_bank_accounts <- ggplot(data, aes(x = Credit_Score, y = Num_Bank_Accounts, fill = Credit_Score)) +
 geom_boxplot() +
 labs("Boxplot") +
 scale_fill_manual(values = c("green","maroon","gold"))
 
-ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Num_Bank_Accounts.png", score_num_bank_accounts)
+ggsave(filename="../creditscoringstudying/plots/Boxplot_Score_Num_Bank_Accounts.png", score_num_bank_accounts)
 
 
 score_num_credit_cards <- ggplot(data, aes(x = Credit_Score, y = Num_Credit_Card, fill = Credit_Score)) +
@@ -485,14 +485,14 @@ geom_boxplot() +
 labs("Boxplot") +
 scale_fill_manual(values = c("green","maroon","gold"))
 
-ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Num_Credit_Cards.png", score_num_credit_cards)
+ggsave(filename="../creditscoringstudying/plots/Boxplot_Score_Num_Credit_Cards.png", score_num_credit_cards)
 
 score_interest_rate <- ggplot(data, aes(x = Credit_Score, y = Interest_Rate, fill = Credit_Score)) +
 geom_boxplot() +
 labs("Boxplot") +
 scale_fill_manual(values = c("green","maroon","gold"))
 
-ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Interest_Rate.png", score_interest_rate)
+ggsave(filename="../creditscoringstudying/plots/Boxplot_Score_Interest_Rate.png", score_interest_rate)
 
 
 score_num_of_loans <- ggplot(data, aes(x = Credit_Score, y = Num_of_Loan, fill = Credit_Score)) +
@@ -500,14 +500,14 @@ geom_boxplot() +
 labs("Boxplot") +
 scale_fill_manual(values = c("green","maroon","gold"))
 
-ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Num_Loans.png", score_num_of_loans)
+ggsave(filename="../creditscoringstudying/plots/Boxplot_Score_Num_Loans.png", score_num_of_loans)
 
 score_due_date <- ggplot(data, aes(x = Credit_Score, y = Delay_from_due_date, fill = Credit_Score)) +
 geom_boxplot() +
 labs("Boxplot") +
 scale_fill_manual(values = c("green","maroon","gold"))
 
-ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Max_DPD.png", score_due_date)
+ggsave(filename="../creditscoringstudying/plots/Boxplot_Score_Max_DPD.png", score_due_date)
 
 
 score_annual_income <- ggplot(data, aes(x = Credit_Score, y = Annual_Income, fill = Credit_Score)) +
@@ -515,7 +515,7 @@ geom_boxplot() +
 labs("Boxplot") +
 scale_fill_manual(values = c("green","maroon","gold"))
 
-ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Annual_Income.png",score_annual_income)
+ggsave(filename="../creditscoringstudying/plots/Boxplot_Score_Annual_Income.png",score_annual_income)
 
 
 score_number_of_delayed_payments <- ggplot(data, aes(x = Credit_Score, y = Num_of_Delayed_Payment, fill = Credit_Score)) +
@@ -523,14 +523,14 @@ geom_boxplot() +
 labs("Boxplot") +
 scale_fill_manual(values = c("green","maroon","gold"))
 
-ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Number_Of_delayed_payments.png",score_number_of_delayed_payments)
+ggsave(filename="../creditscoringstudying/plots/Boxplot_Score_Number_Of_delayed_payments.png",score_number_of_delayed_payments)
 
 score_number_outstanding_debt <- ggplot(data, aes(x = Credit_Score, y = Outstanding_Debt, fill = Credit_Score)) +
 geom_boxplot() +
 labs("Boxplot") +
 scale_fill_manual(values = c("green","maroon","gold"))
 
-ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Number_Outstanding_Debt.png",score_number_outstanding_debt)
+ggsave(filename="../creditscoringstudying/plots/Boxplot_Score_Number_Outstanding_Debt.png",score_number_outstanding_debt)
 
 
 score_number_credit_utilization_ratio <- ggplot(data, aes(x = Credit_Score, y = Credit_Utilization_Ratio, fill = Credit_Score)) +
@@ -538,35 +538,35 @@ geom_boxplot() +
 labs("Boxplot") +
 scale_fill_manual(values = c("green","maroon","gold"))
 
-ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Credit_Utilization_Ratio.png",score_number_credit_utilization_ratio)
+ggsave(filename="../creditscoringstudying/plots/Boxplot_Score_Credit_Utilization_Ratio.png",score_number_credit_utilization_ratio)
 
 score_credit_history_age_months <- ggplot(data, aes(x = Credit_Score, y = Credit_History_Age, fill = Credit_Score)) +
 geom_boxplot() +
 labs("Boxplot") +
 scale_fill_manual(values = c("green","maroon","gold"))
 
-ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Credit_History_Age.png",score_credit_history_age_months)
+ggsave(filename="../creditscoringstudying/plots/Boxplot_Score_Credit_History_Age.png",score_credit_history_age_months)
 
 score_credit_emi_payment_load <- ggplot(data, aes(x = Credit_Score, y = Total_EMI_per_month, fill = Credit_Score)) +
 geom_boxplot() +
 labs("Boxplot") +
 scale_fill_manual(values = c("green","maroon","gold"))
 
-ggsave(filename="../creditscoringstudying/media/Boxplot_Score_EMI_payment_load.png",score_credit_emi_payment_load)
+ggsave(filename="../creditscoringstudying/plots/Boxplot_Score_EMI_payment_load.png",score_credit_emi_payment_load)
 
 score_credit_amount_invested_monthly <- ggplot(data, aes(x = Credit_Score, y = Amount_invested_monthly, fill = Credit_Score)) +
 geom_boxplot() +
 labs("Boxplot") +
 scale_fill_manual(values = c("green","maroon","gold"))
 
-ggsave(filename="../creditscoringstudying/media/Boxplot_Score_Monthly_Investitions.png",score_credit_amount_invested_monthly)
+ggsave(filename="../creditscoringstudying/plots/Boxplot_Score_Monthly_Investitions.png",score_credit_amount_invested_monthly)
 
 
 payment_of_min_amount_graph <- ggplot(data, aes(x = Payment_of_Min_Amount)) +
 geom_bar() +
 labs(title = "Count plot by payment of min amount", x = "Payment Of Min Amount", y = "Count")
 
-ggsave("../creditscoringstudying/media/BarPlot_Payment_of_min_amount.png",payment_of_min_amount_graph)
+ggsave("../creditscoringstudying/plots/BarPlot_Payment_of_min_amount.png",payment_of_min_amount_graph)
 
 
 source("utils.r")
@@ -588,7 +588,7 @@ credit_score_distribution_payment_behaviour_graph <- ggplot(data, aes(x = Paymen
   labs(title = "Credit Score Distribution  by Payment Behaviour", fill = "Credit Score") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-ggsave("../creditscoringstudying/media/MosaicPlot_Payment_Behaviour_Credit_Score.png",credit_score_distribution_payment_behaviour_graph)
+ggsave("../creditscoringstudying/plots/MosaicPlot_Payment_Behaviour_Credit_Score.png",credit_score_distribution_payment_behaviour_graph)
 
 
 # I want to analyse the correlation between this categorical column and final result
@@ -671,7 +671,7 @@ credit_score_distribution_occupation_graph <- ggplot(data, aes(x = Occupation, f
   labs(title = "Credit Score Distribution by Occupation", fill = "Credit Score") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-ggsave("../creditscoringstudying/media/MosaicPlot_Occupation_Credit_Score.png",credit_score_distribution_occupation_graph)
+ggsave("../creditscoringstudying/plots/MosaicPlot_Occupation_Credit_Score.png",credit_score_distribution_occupation_graph)
 
 # I decide to drop occupation column as insignificant
 
