@@ -1,3 +1,4 @@
+import shap
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score
@@ -83,8 +84,37 @@ def train_and_save_lightgbm():
     
     print("✅ Model saved to 'models/xgb/' folder")
     print(f"   Files: lightgbm_model.txt, label_encoder.joblib, feature_columns.joblib")
-    
-    return model, label_encoder, feature_cols
+    print("🔍 Generating SHAP values for test set...")
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer.shap_values(X_test)
+
+    # Convert to readable format
+    shap_summary = []
+
+    # Use enumerate to get 0-based index
+    for row_idx, row_values in enumerate(X_test.values):
+        row_shap = []
+        for j, col in enumerate(feature_cols):
+            if isinstance(shap_values, list):
+                # Old SHAP format: list of arrays [n_samples, n_features]
+                impact = shap_values[np.argmax(y_pred[row_idx])][row_idx, j]
+            else:
+                # New SHAP format: array of shape [n_samples, n_features, n_classes]
+                impact = shap_values[row_idx, j, np.argmax(y_pred[row_idx])]
+            row_shap.append({
+                "feature": col,
+                "value": float(row_values[j]),
+                "impact": float(impact)
+            })
+        shap_summary.append(row_shap)
+    print("✅ SHAP explanations generated for test set.")
+
+    first_sample = shap_summary[0]
+    top_features = sorted(first_sample, key=lambda x: abs(x['impact']), reverse=True)[:]
+    print("\nTop 5 features influencing prediction for first test sample:")
+    for f in top_features:
+        print(f" + {f['feature']} ({f['value']}) → {f['impact']:.4f}")
+    return model, label_encoder, feature_cols, shap_summary
 
 # Run training and saving
 if __name__ == "__main__":
