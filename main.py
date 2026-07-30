@@ -6,67 +6,67 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.metrics import accuracy_score, classification_report
-from tensorflow import keras
 from keras.optimizers import Adamax # tried SGD (0.50), RMSprop(0.70, LR=0.01), Adam(0.69,LR=0.001)
 from keras.models import Sequential
 from keras.layers import Dense
 import seaborn as sns
 import matplotlib.pyplot as plt
+from ann_visualizer.visualize import ann_viz
 
-from statsmodels.miscmodels.ordinal_model import OrderedModel, OrderedResultsWrapper
+from keras.utils import plot_model
 
 def main() -> None:
-    logistic_regression_ordinal()
+    neural_network()
     pass
 
-def logistic_regression_ordinal() -> None:
-    # split train/test set
-    train_data = pd.read_csv("resources/model_training/train_model.csv")
-    test_data = pd.read_csv("resources/model_training/test_model.csv")
+# def logistic_regression_ordinal() -> None:
+#     # split train/test set
+#     train_data = pd.read_csv("resources/model_training/train_model.csv")
+#     test_data = pd.read_csv("resources/model_training/test_model.csv")
 
-    X = train_data.drop("Credit_Score", axis=1)
-    y = train_data["Credit_Score"]
+#     X = train_data.drop("Credit_Score", axis=1)
+#     y = train_data["Credit_Score"]
 
-    X_test = test_data.drop("Credit_Score", axis=1)
-    y_test = test_data["Credit_Score"]
+#     X_test = test_data.drop("Credit_Score", axis=1)
+#     y_test = test_data["Credit_Score"]
 
-    # categories
-    cat_order = ["Poor", "Standard", "Good"]
-    y_cat = pd.Categorical(y, categories=cat_order, ordered=True)
-    y_codes = y_cat.codes  # 0 = Poor, 1 = Standard, 2 = Good
+#     # categories
+#     cat_order = ["Poor", "Standard", "Good"]
+#     y_cat = pd.Categorical(y, categories=cat_order, ordered=True)
+#     y_codes = y_cat.codes  # 0 = Poor, 1 = Standard, 2 = Good
 
-    # scale X/Xtest
-    scaler = StandardScaler()
-    Xs = scaler.fit_transform(X)
-    X_tests = scaler.fit_transform(X_test); 
+#     # scale X/Xtest
+#     scaler = StandardScaler()
+#     Xs = scaler.fit_transform(X)
+#     X_tests = scaler.fit_transform(X_test); 
 
-    # train
-    model = OrderedModel(y_codes, Xs, distr='logit')
-    res = model.fit(method='bfgs', maxiter=1000, disp=False)
+#     # train
+#     model = OrderedModel(y_codes, Xs, distr='logit')
+#     res = model.fit(method='bfgs', maxiter=1000, disp=False)
 
-    # 6) Extract parameters: thresholds (cutpoints) and coefficients
-    # The parameter layout in statsmodels: first the cutpoints (k-1), then coefficients.
-    print(res)
-    params = res._results.params
-    n_cuts = len(cat_order) - 1
-    cutpoints = params[:n_cuts]
-    betas = params[n_cuts:]
-    print("cutpoints (alpha):", cutpoints)
-    print("beta coefficients:", betas)
+#     # 6) Extract parameters: thresholds (cutpoints) and coefficients
+#     # The parameter layout in statsmodels: first the cutpoints (k-1), then coefficients.
+#     print(res)
+#     params = res._results.params
+#     n_cuts = len(cat_order) - 1
+#     cutpoints = params[:n_cuts]
+#     betas = params[n_cuts:]
+#     print("cutpoints (alpha):", cutpoints)
+#     print("beta coefficients:", betas)
 
-    # save model output
-    os.makedirs("resources/models", exist_ok=True)
-    joblib.dump({"cutpoints": cutpoints, "betas": betas, "cat_order": cat_order}, 
-                "resources/models/ordinal_logistic_coeff.joblib")
-    joblib.dump(scaler, "resources/models/ordinal_logistic_scaler.joblib")
+#     # save model output
+#     os.makedirs("resources/models", exist_ok=True)
+#     joblib.dump({"cutpoints": cutpoints, "betas": betas, "cat_order": cat_order}, 
+#                 "resources/models/ordinal_logistic_coeff.joblib")
+#     joblib.dump(scaler, "resources/models/ordinal_logistic_scaler.joblib")
     
-    # predict on validation set
-    y_pred_ord = predict_ordinal(X_tests, betas, cutpoints, cat_order)
+#     # predict on validation set
+#     y_pred_ord = predict_ordinal(X_tests, betas, cutpoints, cat_order)
 
-    # Evaluate ordinal model
-    accuracy_ord = accuracy_score(y_test, y_pred_ord)
-    print("Ordinal Logistic Accuracy:", accuracy_ord)
-    print(classification_report(y_test, y_pred_ord))
+#     # Evaluate ordinal model
+#     accuracy_ord = accuracy_score(y_test, y_pred_ord)
+#     print("Ordinal Logistic Accuracy:", accuracy_ord)
+#     print(classification_report(y_test, y_pred_ord))
 
 
 
@@ -173,6 +173,9 @@ def neural_network() -> None:
     # Save the DataFrame with predicted values to a new CSV file
     test_data.to_csv("test_with_predictions.csv", index=False)  
     # print(classification_report(y_test, y_pred))
+
+    # plot_model(model, to_file='model_structure.png', show_shapes=True, show_layer_names=True)
+    ann_viz(model, title="Neural Network", view=True)
     return
 
 def predict_ordinal(X_scaled: np.ndarray, betas: np.ndarray, cutpoints: np.ndarray, cat_order: list) -> np.ndarray:

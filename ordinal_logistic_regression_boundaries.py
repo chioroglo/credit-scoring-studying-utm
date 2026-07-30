@@ -3,6 +3,64 @@ import pandas as pd
 import joblib
 from scipy.special import expit  # Sigmoid function
 
+def explain_with_shap(model, X_train_scaled, X_test_scaled, feature_cols, scaler=None):
+    """
+    Generate SHAP explanations for the trained model
+    """
+    import shap
+    import pandas as pd
+
+    print("\n" + "="*50)
+    print("SHAP EXPLANATION")
+    print("="*50)
+
+    # Use small background sample (performance critical)
+    background = X_train_scaled.sample(min(100, len(X_train_scaled)), random_state=42)
+
+    # Create explainer
+    explainer = shap.KernelExplainer(model.predict_proba, background)
+
+    # Select small subset to explain
+    X_sample = X_test_scaled.iloc[:50]
+
+    print("Calculating SHAP values (this may take a while)...")
+
+    shap_values = explainer.shap_values(X_sample)
+
+    # -------- GLOBAL IMPORTANCE --------
+    print("\nShowing global feature importance...")
+    shap.summary_plot(shap_values, X_sample, show=True)
+
+    # -------- PER CLASS --------
+    class_names = ["Poor", "Standard", "Good"]
+
+    for i, class_name in enumerate(class_names):
+        print(f"\nSHAP summary for class: {class_name}")
+        shap.summary_plot(shap_values[i], X_sample, show=True)
+
+    # -------- SINGLE PREDICTION --------
+    print("\nExplaining single prediction...")
+
+    shap.initjs()
+
+    shap.force_plot(
+        explainer.expected_value[2],  # Class "Good"
+        shap_values[2][0],
+        X_sample.iloc[0],
+        matplotlib=True
+    )
+
+    # -------- OPTIONAL: convert back to original scale --------
+    if scaler is not None:
+        X_unscaled = pd.DataFrame(
+            scaler.inverse_transform(X_sample),
+            columns=feature_cols
+        )
+        print("\n(Info) Also created unscaled version of data for interpretation.")
+
+    print("\nSHAP explanation complete.")
+
+
 def analyze_decision_boundaries(model_dir='models'):
     """
     Analyze decision boundaries for ordinal logistic regression
@@ -10,7 +68,6 @@ def analyze_decision_boundaries(model_dir='models'):
     
     # Load model components
     model = joblib.load(f'{model_dir}/ordinal_logistic_model.joblib')
-    thetas = joblib.load(f'{model_dir}/thetas_mord.joblib')
     feature_cols = joblib.load(f'{model_dir}/feature_columns.joblib')
     mapping = joblib.load(f'{model_dir}/ordinal_mapping.joblib')
     
@@ -24,7 +81,7 @@ def analyze_decision_boundaries(model_dir='models'):
     n_features = len(feature_cols)
     
     # The first n_boundaries values are intercepts
-    intercepts = thetas[:n_boundaries]
+    intercepts = model.theta_[:n_boundaries]
     # The remaining values are feature coefficients
     coefficients = model.coef_
     
@@ -155,7 +212,6 @@ def example_usage():
     
     # Analyze boundaries
     intercepts, coefficients, features = analyze_decision_boundaries()
-    
     # Take a test sample
     test_sample = df.iloc[0:110000].copy()
     test_sample_features = test_sample[feature_cols].fillna(test_sample[feature_cols].median())
@@ -165,18 +221,29 @@ def example_usage():
     print("TESTING A SPECIFIC SAMPLE")
     print("="*60)
     
-    for entry in test_sample_scaled:
+    for i, entry in enumerate(test_sample_scaled):
         # Check if this sample is on boundary
         on_boundary, boundary_idx, distances = is_on_decision_boundary(
             entry, intercepts, coefficients, tolerance=0.01
         )
 
-        print(f"\nSample details:")
+        # Get predicted class for this sample
+        predictions, _, probabilities = predict_with_boundaries(
+            entry.reshape(1, -1), intercepts, coefficients
+        )
+        predicted_class = list(mapping.keys())[predictions[0]]
+        actual_class = test_sample['Credit_Score'].values[i]
+
+        print(f"\nSample {i+1} details:")
         print(f"Scaled features: {entry}")
+        print(f"Actual class: {actual_class}")
+        print(f"Predicted class: {predicted_class}")
+        print(f"Probabilities: Poor={probabilities[0][0]:.3f}, Standard={probabilities[0][1]:.3f}, Good={probabilities[0][2]:.3f}")
+
         print(f"\nDistance to boundaries:")
-        for i, dist in enumerate(distances):
-            boundary_name = f"{list(mapping.keys())[i]}-{list(mapping.keys())[i+1]}"
-            print(f"  Boundary {i+1} ({boundary_name}): distance = {dist:.6f}")
+        for j, dist in enumerate(distances):
+            boundary_name = f"{list(mapping.keys())[j]}-{list(mapping.keys())[j+1]}"
+            print(f"  Boundary {j+1} ({boundary_name}): distance = {dist:.6f}")
 
         if on_boundary:
             boundary_names = list(mapping.keys())

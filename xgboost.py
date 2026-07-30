@@ -1,3 +1,5 @@
+from xml.parsers.expat import model
+
 import shap
 import numpy as np
 import pandas as pd
@@ -8,6 +10,55 @@ import lightgbm as lgb
 import joblib
 import json
 import os
+
+import shap
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+import shap
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def shap_summary_plot_per_class(model, X_test, label_encoder, background_size=100):
+
+    import shap
+    import matplotlib.pyplot as plt
+
+    print("\n🔍 Creating SHAP summary plots per class...")
+
+    background = X_test.sample(min(background_size, len(X_test)), random_state=42)
+
+    explainer = shap.TreeExplainer(
+        model,
+        data=background,
+        feature_perturbation="tree_path_dependent"
+    )
+
+    shap_values = explainer.shap_values(X_test)
+
+    class_names = label_encoder.classes_
+
+    for i, class_name in enumerate(class_names):
+
+        print("\n" + "=" * 60)
+        print(f"📊 SHAP Summary for class: {class_name}")
+
+        # -------------------------------
+        # extract class-specific SHAP
+        # -------------------------------
+        if isinstance(shap_values, list):
+            sv = shap_values[i]
+        else:
+            sv = shap_values[:, :, i] if shap_values.ndim == 3 else shap_values
+
+        shap.summary_plot(
+            sv,
+            X_test,
+            show=True
+        )
 
 def train_and_save_lightgbm():
     df = pd.read_csv('resources/model_training/train_data_combined.csv')
@@ -82,39 +133,42 @@ def train_and_save_lightgbm():
     with open('models/xgb/metadata.json', 'w') as f:
         json.dump(metadata, f, indent=2)
     
-    print("✅ Model saved to 'models/xgb/' folder")
-    print(f"   Files: lightgbm_model.txt, label_encoder.joblib, feature_columns.joblib")
-    print("🔍 Generating SHAP values for test set...")
-    explainer = shap.TreeExplainer(model)
-    shap_values = explainer.shap_values(X_test)
+    # print("✅ Model saved to 'models/xgb/' folder")
+    # print(f"   Files: lightgbm_model.txt, label_encoder.joblib, feature_columns.joblib")
+    # print("🔍 Generating SHAP values for test set...")
+    # explainer = shap.TreeExplainer(model)
+    # shap_values = explainer.shap_values(X_test)
 
-    # Convert to readable format
-    shap_summary = []
+    # # Convert to readable format
+    # shap_summary = []
 
-    # Use enumerate to get 0-based index
-    for row_idx, row_values in enumerate(X_test.values):
-        row_shap = []
-        for j, col in enumerate(feature_cols):
-            if isinstance(shap_values, list):
-                # Old SHAP format: list of arrays [n_samples, n_features]
-                impact = shap_values[np.argmax(y_pred[row_idx])][row_idx, j]
-            else:
-                # New SHAP format: array of shape [n_samples, n_features, n_classes]
-                impact = shap_values[row_idx, j, np.argmax(y_pred[row_idx])]
-            row_shap.append({
-                "feature": col,
-                "value": float(row_values[j]),
-                "impact": float(impact)
-            })
-        shap_summary.append(row_shap)
-    print("✅ SHAP explanations generated for test set.")
+    # # Use enumerate to get 0-based index
+    # for row_idx, row_values in enumerate(X_test.values):
+    #     row_shap = []
+    #     for j, col in enumerate(feature_cols):
+    #         if isinstance(shap_values, list):
+    #             # Old SHAP format: list of arrays [n_samples, n_features]
+    #             impact = shap_values[np.argmax(y_pred[row_idx])][row_idx, j]
+    #         else:
+    #             # New SHAP format: array of shape [n_samples, n_features, n_classes]
+    #             impact = shap_values[row_idx, j, np.argmax(y_pred[row_idx])]
+    #         row_shap.append({
+    #             "feature": col,
+    #             "value": float(row_values[j]),
+    #             "impact": float(impact)
+    #         })
+    #     shap_summary.append(row_shap)
+    # print("✅ SHAP explanations generated for test set.")
 
-    first_sample = shap_summary[0]
-    top_features = sorted(first_sample, key=lambda x: abs(x['impact']), reverse=True)[:]
-    print("\nTop 5 features influencing prediction for first test sample:")
-    for f in top_features:
-        print(f" + {f['feature']} ({f['value']}) → {f['impact']:.4f}")
-    return model, label_encoder, feature_cols, shap_summary
+    # first_sample = shap_summary[0]
+    # top_features = sorted(first_sample, key=lambda x: abs(x['impact']), reverse=True)[:]
+    # print("\nTop 5 features influencing prediction for first test sample:")
+    # for f in top_features:
+    #     print(f" + {f['feature']} ({f['value']}) → {f['impact']:.4f}")
+    X_small = X_test.sample(500, random_state=42)
+    shap_summary_plot_per_class(model, X_small, label_encoder)
+
+    return model, label_encoder, feature_cols, _
 
 # Run training and saving
 if __name__ == "__main__":

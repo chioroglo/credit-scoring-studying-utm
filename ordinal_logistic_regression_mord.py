@@ -9,16 +9,54 @@ from mord import LogisticAT  # For ordinal logistic regression
 import joblib
 import os
 import warnings
+import shap
+
 warnings.filterwarnings('ignore')
 
+def shap_summary_plot_per_class(model, X_test, label_encoder, background_size=100):
+
+    import shap
+    import matplotlib.pyplot as plt
+
+    print("\n🔍 Creating SHAP summary plots per class...")
+
+    background = X_test.sample(min(background_size, len(X_test)), random_state=42)
+
+    explainer = shap.TreeExplainer(
+        model,
+        data=background,
+        feature_perturbation="tree_path_dependent"
+    )
+
+    shap_values = explainer.shap_values(X_test)
+
+    class_names = label_encoder.classes_
+
+    for i, class_name in enumerate(class_names):
+
+        print("\n" + "=" * 60)
+        print(f"📊 SHAP Summary for class: {class_name}")
+
+        # -------------------------------
+        # extract class-specific SHAP
+        # -------------------------------
+        if isinstance(shap_values, list):
+            sv = shap_values[i]
+        else:
+            sv = shap_values[:, :, i] if shap_values.ndim == 3 else shap_values
+
+        shap.summary_plot(
+            sv,
+            X_test,
+            show=True
+        )
+        
 def main() -> None:
-    analyze_decision_boundaries()
-    return
     train_logistic_regression()
         # Take a sample from test data
     df = pd.read_csv('resources/model_training/train_data_combined.csv')
 
-    X_input = df.iloc[109910:109920:1].copy()
+    X_input = df
     
     predictions, probs = predict_new_data(X_input)
 
@@ -107,7 +145,6 @@ def train_logistic_regression() -> None:
     plt.title('Confusion Matrix LOGISTIC REGRESSION')
     plt.show()
 
-
     # Step 10: Save all components as joblib files
     os.makedirs('models', exist_ok=True)
     
@@ -145,6 +182,14 @@ def train_logistic_regression() -> None:
 
     print(f"Test prediction: {prediction_label}")
     print("Model loaded successfully!")
+
+    explain_with_shap(
+        loaded_model,
+        X_train_scaled,
+        X_test_scaled,
+        feature_cols,
+        scaler
+    )
 
 # Step 12: Create a complete prediction function
 def predict_new_data(new_data_df, model_dir='models'):

@@ -2,12 +2,55 @@ import numpy as np
 import pandas as pd
 import lightgbm as lgb
 import joblib
+import shap
+import matplotlib.pyplot as plt
 
 def load_model():
     model = lgb.Booster(model_file='models/xgb/lightgbm_model.txt')
+    plt.figure(figsize=(20, 10))
+    lgb.plot_tree(
+        model,                # sklearn LGBMClassifier or LGBMRegressor
+        tree_index=0,         # first tree
+        show_info=['split_gain', 'internal_value', 'internal_count', 'leaf_count']
+    )
+    plt.title("LightGBM Tree 0 (Graphviz)")
+    plt.show()
     label_encoder = joblib.load('models/xgb/label_encoder.joblib')
     feature_cols = joblib.load('models/xgb/feature_columns.joblib')
-    return model, label_encoder, feature_cols
+    explainer = shap.TreeExplainer(model)
+    return model, label_encoder, feature_cols, explainer
+
+def explain_prediction(explainer, df, predicted_class, feature_cols):
+    shap_values = explainer.shap_values(df)
+    
+    # ✅ Handle both formats
+    if isinstance(shap_values, list):
+        # Old format
+        class_shap = shap_values[predicted_class][0]
+    else:
+        # New format (3D array)
+        class_shap = shap_values[0, :, predicted_class]
+    
+    feature_values = df.iloc[0]
+    
+    contributions = []
+    
+    for i, col in enumerate(feature_cols):
+        contributions.append({
+            "feature": col,
+            "value": float(feature_values[col]),
+            "impact": float(class_shap[i])
+        })
+    
+    contributions = sorted(contributions, key=lambda x: abs(x["impact"]), reverse=True)
+    
+    positive = [c for c in contributions if c["impact"] > 0][:]
+    negative = [c for c in contributions if c["impact"] < 0][:]
+    
+    return {
+        "top_positive": positive,
+        "top_negative": negative
+    }
 
 def is_near_decision_boundary(probabilities, threshold=0.1):
     """
@@ -59,7 +102,7 @@ def check_boundary_for_customer(customer_data, boundary_threshold=0.1):
     Check if a customer's prediction is near decision boundary
     """
     # Load model
-    model, label_encoder, feature_cols = load_model()
+    model, label_encoder, feature_cols, explainer = load_model()
     
     # Prepare data
     df = pd.DataFrame([customer_data])
@@ -78,6 +121,10 @@ def check_boundary_for_customer(customer_data, boundary_threshold=0.1):
         probabilities, boundary_threshold
     )
     
+    explanation = explain_prediction(
+        explainer, df, predicted_class, feature_cols
+    )
+        
     result = {
         'prediction': predicted_label,
         'prediction_code': int(predicted_class),
@@ -90,7 +137,8 @@ def check_boundary_for_customer(customer_data, boundary_threshold=0.1):
         'is_near_boundary': is_boundary,
         'boundary_info': boundary_type,
         'confidence_gap': float(confidence_gap),
-        'boundary_distance': float(1 - confidence_gap)  # How close to boundary
+        'boundary_distance': float(1 - confidence_gap),  # How close to boundary
+        'explanation': explanation
     }
     
     return result
@@ -105,7 +153,7 @@ if __name__ == "__main__":
         'Num_Credit_Card': 3,
         'Interest_Rate': 6,
         'Num_of_Loan': 1,
-        'Delay_from_due_date': 2,
+        'Delay_from_due_date': 30,
         'Num_of_Delayed_Payment': 1,
         'Changed_Credit_Limit': 3.0,
         'Num_Credit_Inquiries': 2,
@@ -119,7 +167,17 @@ if __name__ == "__main__":
     }
     
     result = check_boundary_for_customer(borderline_customer)
-    
+
+    print("\n🔍 SHAP Explanation:")
+
+    print("\n🟢 Factors pushing prediction UP:")
+    for item in result['explanation']['top_positive']:
+        print(f"  + {item['feature']} ({item['value']}) → {item['impact']:.4f}")
+
+    print("\n🔴 Factors pushing prediction DOWN:")
+    for item in result['explanation']['top_negative']:
+        print(f"  - {item['feature']} ({item['value']}) → {item['impact']:.4f}")
+
     print("📊 Decision Boundary Analysis:")
     print(f"Prediction: {result['prediction']}")
     print(f"Confidence: {result['confidence']:.2%}")
